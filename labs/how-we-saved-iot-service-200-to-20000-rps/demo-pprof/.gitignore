@@ -1,0 +1,4 @@
+pprof-output/
+*.pb.gz
+*.svg
+vendor/
