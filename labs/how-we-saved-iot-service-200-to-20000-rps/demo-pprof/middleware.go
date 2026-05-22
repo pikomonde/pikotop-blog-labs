@@ -28,9 +28,9 @@ const (
 //   machineHashes → pre-hashed bcrypt tokens for device credentials
 
 type fakeRedis struct {
-	humanCache    map[string][]byte     // userID → full JSON blob
-	machineHashes map[string]string     // deviceID → bcrypt hash of token
-	ttl           map[string]time.Time  // shared TTL tracking
+	humanCache    map[string][]byte    // userID → full JSON blob
+	machineHashes map[string]string    // deviceID → bcrypt hash of token
+	ttl           map[string]time.Time // shared TTL tracking
 }
 
 func newFakeRedis() *fakeRedis {
@@ -50,7 +50,7 @@ func newFakeRedis() *fakeRedis {
 	// Lower values like 4 are faster but still visibly slow under load.
 	// Use cost 12 to match realistic production behaviour.
 	for _, id := range []string{"device-iot-001", "device-iot-002", "device-iot-003"} {
-		hash, _ := bcrypt.GenerateFromPassword([]byte("s3cr3t-t0k3n-"+id), bcrypt.DefaultCost)
+		hash, _ := bcrypt.GenerateFromPassword([]byte("s3cr3t-t0k3n-"+id), 12)
 		r.machineHashes[id] = string(hash)
 	}
 
@@ -138,6 +138,9 @@ func handleHumanAuth(c *gin.Context) {
 		return
 	}
 
+	// Mock process
+	mock_10_000_000_addition()
+
 	// Store user in context for the handler
 	c.Set(string(ctxKeyUser), user)
 	c.Request = c.Request.WithContext(
@@ -169,6 +172,9 @@ func handleMachineAuth(c *gin.Context) {
 		return
 	}
 
+	// Mock process
+	mock_10_000_000_addition()
+
 	c.Set(string(ctxKeyDeviceID), deviceID)
 	c.Next()
 }
@@ -186,4 +192,11 @@ func hasPermission(user *BigUser, required string) bool {
 		}
 	}
 	return false
+}
+
+func mock_10_000_000_addition() {
+	tmp := 0
+	for i := 0; i < 10_000_000; i++ {
+		tmp += i
+	}
 }
